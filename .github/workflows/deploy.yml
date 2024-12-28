@@ -24,12 +24,33 @@ jobs:
           docker build -t 982081066879.dkr.ecr.us-east-2.amazonaws.com/mi-aplicacion-node:${{ github.sha }} .
           docker push 982081066879.dkr.ecr.us-east-2.amazonaws.com/mi-aplicacion-node:${{ github.sha }}
 
-      # 4. Deploy to ECS
-      - name: Deploy to ECS
+      # 4. Register new task definition
+      - name: Register new task definition
+        run: |
+          aws ecs register-task-definition \
+            --family Microservicio-task-4 \
+            --container-definitions '[
+              {
+                "name": "app-container",
+                "image": "982081066879.dkr.ecr.us-east-2.amazonaws.com/mi-aplicacion-node:${{ github.sha }}",
+                "memory": 3072,
+                "cpu": 1024,
+                "essential": true,
+                "portMappings": [
+                  {
+                    "containerPort": 3000,
+                    "hostPort": 3000,
+                    "protocol": "tcp"
+                  }
+                ]
+              }
+            ]'
+
+      # 5. Update ECS service with the new task definition
+      - name: Update ECS service
         run: |
           aws ecs update-service \
             --cluster mi-cluster-ecs \
             --service mi-api-service \
             --force-new-deployment \
-            --task-definition Microservicio-task-4:1 \
-            --image 982081066879.dkr.ecr.us-east-2.amazonaws.com/mi-aplicacion-node:${{ github.sha }}
+            --task-definition Microservicio-task-4:${{ github.sha }}
