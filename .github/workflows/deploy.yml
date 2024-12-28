@@ -31,6 +31,7 @@ jobs:
       - name: Register new task definition
         run: |
           aws ecs register-task-definition \
+            --region us-east-2 \
             --family Microservicio-task-4 \
             --container-definitions '[
               {
@@ -53,6 +54,7 @@ jobs:
       - name: Update ECS service
         run: |
           aws ecs update-service \
+            --region us-east-2 \
             --cluster mi-cluster-ecs \
             --service mi-api-service \
             --force-new-deployment \
