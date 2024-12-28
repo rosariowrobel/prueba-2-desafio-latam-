@@ -31,7 +31,14 @@ jobs:
           docker build -t 982081066879.dkr.ecr.us-east-2.amazonaws.com/mi-aplicacion-node:${{ github.sha }} .
           docker push 982081066879.dkr.ecr.us-east-2.amazonaws.com/mi-aplicacion-node:${{ github.sha }}
 
-      # 5. Register new task definition
+      # 5. Get the latest revision number of the task definition
+      - name: Get latest task definition revision
+        id: get_revision
+        run: |
+          REVISION=$(aws ecs list-task-definitions --family-prefix Microservicio-task-4 --sort DESC --max-items 1 --query "taskDefinitionArns[0]" --output text)
+          echo "::set-output name=revision::$(echo $REVISION | sed 's/.*:\([0-9]*\)$/\1/')"
+
+      # 6. Register new task definition
       - name: Register new task definition
         run: |
           aws ecs register-task-definition \
@@ -53,11 +60,11 @@ jobs:
               }
             ]'
 
-      # 6. Update ECS service with the new task definition
+      # 7. Update ECS service with the new task definition
       - name: Update ECS service
         run: |
           aws ecs update-service \
             --cluster mi-cluster-ecs \
             --service mi-api-service \
             --force-new-deployment \
-            --task-definition Microservicio-task-4:${{ github.sha }}
+            --task-definition Microservicio-task-4:${{ steps.get_revision.outputs.revision }}
