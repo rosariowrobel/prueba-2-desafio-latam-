@@ -67,4 +67,6 @@ jobs:
             --cluster mi-cluster-ecs \
             --service mi-api-service \
             --force-new-deployment \
-            --task-definition Microservicio-task-4:${{ steps.get_revision.outputs.revision }}
+            --task-definition Microservicio-task-4:1 \
+            --region us-east-2
+
